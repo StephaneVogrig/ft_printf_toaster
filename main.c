@@ -6,7 +6,7 @@
 /*   By: svogrig <svogrig@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/16 23:31:26 by svogrig           #+#    #+#             */
-/*   Updated: 2023/11/21 12:57:27 by svogrig          ###   ########.fr       */
+/*   Updated: 2023/11/28 01:28:16 by svogrig          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,31 +24,63 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#define FILE_EXPECTED_STR "tempfile_expected_str.ft_printf_toaster"
+#define FILE_EXPECTED_RETURN "tempfile_expected_return.ft_printf_toaster"
+
+
+char	*file_load(char *file_path)
+{
+	char		*content;
+	struct stat	file_attribut;
+	int 		size_read;
+	int			fd;
+
+
+	fd = open(file_path, O_RDWR);
+	fstat(fd, &file_attribut);
+	content = malloc(file_attribut.st_size);
+	if (!content)
+		return (NULL);
+	size_read = read(fd, content, file_attribut.st_size);
+	close(fd);
+	if (size_read == -1)
+	{
+		free(content);
+		return (NULL);
+	}
+	return (content);
+
+}
+
 int	main(void)
 {
-	int		fd_tempfile;
+	int		fd_expected_str;
+	int		fd_expected_return;
 	pid_t	child;
-	int dup_stdout;
-	int wstatus;
+	int		wstatus;
+	int 	size_expected;
 
-	dup_stdout = 1;
+	size_expected = 0;
 	child = fork();
-	int size;
-
-	size = 0;
 	if (child == 0)
 	{
-		fd_tempfile = open("tempfile.printftoaster", O_CREAT | O_RDWR | O_TRUNC, S_IRWXU);
-		if (fd_tempfile == -1)
-		{
-			printf("fichier temporaire non cree !\n");
+		fd_expected_str = open(FILE_EXPECTED_STR, O_CREAT | O_RDWR | O_TRUNC, S_IRWXU);
+		if (fd_expected_str == -1)
 			return (-1);
-		}
-		int dup_stdout = dup(1);
-		if (dup2(fd_tempfile, 1) == -1)
-			return (-1);
-		size = printf("fichier temporaire cree !\n");
-		close(fd_tempfile);
+		if (dup2(fd_expected_str, 1) == -1)
+			return (-2);
+
+		size_expected = printf("tempfile_expected_str cree !\n");
+		close(fd_expected_str);
+
+		fd_expected_return = open(FILE_EXPECTED_RETURN, O_CREAT | O_RDWR | O_TRUNC, S_IRWXU);
+		if (fd_expected_return == -1)
+			return (-3);
+		if (dup2(fd_expected_return, 1) == -1)
+			return (-2);
+
+		//printf("%d", fd_expected_return);
+		close(fd_expected_return);
 		return (0);
 	}
 	else
@@ -56,21 +88,20 @@ int	main(void)
 		waitpid(child, &wstatus, 0);
 	}
 
-	char		*content;
-	struct stat	file_attribut;
-	int size_read;
+	if (WIFEXITED(wstatus))
+	{
+		if (WEXITSTATUS(wstatus) != 0)
+			return (-4);
+	}
+	else
+		return (-5);
+	
+	char *expected_str = file_load(FILE_EXPECTED_STR);
+	char *expected_return = file_load(FILE_EXPECTED_RETURN);
+	
+	printf("expected stdout = %s\n", expected_str);
+	printf("expected return = %s\n", expected_return);
 
-	fd_tempfile = open("tempfile.printftoaster", O_RDWR);
-	fstat(fd_tempfile, &file_attribut);
-	content = malloc(file_attribut.st_size);
-	if (!content)
-		return (-1);
-	size_read = read(fd_tempfile, content, file_attribut.st_size);
-	close(fd_tempfile);
-	printf("size in file : %ld, size read : %d\n", file_attribut.st_size, size_read);
-	write(1, content, file_attribut.st_size);
-	//write(dup_stdout, "content\n", 7);
-	//write(dup_stdout, content, size);
 /*	
 
 	//sleep(3);
