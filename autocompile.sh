@@ -3,9 +3,10 @@
 while true; do
 	clear
 
-	cc -Wall -Wextra -Werror *.c -o printf_toaster
+	if cc -Wall -Wextra -Werror main.c -o printf_toaster; then
 
 	./printf_toaster
-	sleep 5
+fi
+	sleep 2
 done
 

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   essai_pipe.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: svogrig <svogrig@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/16 23:31:26 by svogrig           #+#    #+#             */
-/*   Updated: 2023/11/28 01:28:16 by svogrig          ###   ########.fr       */
+/*   Updated: 2023/12/13 05:13:45 by svogrig          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,22 @@
 
 int	ft_printf(char *format)
 {
-	write(1, format, strlen(format));
-	write(1, "", 1);
-	return (10);
+	//write(1, format, strlen(format));
+	//write(1, "\n", 1);
+	return (write(1, format, strlen(format)));
+}
+
+int	prepare(int *pipe_str, int *pipe_len)
+{
+	close(pipe_str[0]);
+	close(pipe_len[0]);
+	if (dup2(pipe_str[1], 1) == -1)
+	{
+		close(pipe_str[1]);
+		close(pipe_len[1]);
+		return (0);
+	}
+	return (1);
 }
 
 int	main(void)
@@ -51,9 +64,15 @@ int	main(void)
 		close(pipe_str[0]);
 		close(pipe_len[0]);
 		if (dup2(pipe_str[1], 1) == -1)
+		{
+			close(pipe_str[1]);
+			close(pipe_len[1]);
 			return (-1);
-		len = printf("printf depuis enfant\n");
+		}
+		len = printf("123456789123456789");
 		write(pipe_len[1], &len, sizeof(int));
+		close(pipe_str[1]);
+		close(pipe_len[1]);
 		return (0);
 	}
 	else
@@ -65,11 +84,11 @@ int	main(void)
 		read(pipe_len[0], &len, sizeof(int));
 		close(pipe_str[0]);
 		close(pipe_len[0]);
-		printf("%s", buffer);
+		printf("%s | ", buffer);
 		printf("%i\n", len);
 	}
 	
-	printf("-----------------------------\n");
+	//printf("-----------------------------\n");
 	if(pipe(pipe_str) == -1)
 		return (-1);
 	if(pipe(pipe_len) == -1)
@@ -81,9 +100,15 @@ int	main(void)
 		close(pipe_str[0]);
 		close(pipe_len[0]);
 		if (dup2(pipe_str[1], 1) == -1)
+		{
+			close(pipe_str[1]);
+			close(pipe_len[1]);
 			return (-1);
-		len = ft_printf("test ft_printf\n");
+		}
+		len = ft_printf("test ft_printf");
 		write(pipe_len[1], &len, sizeof(int));
+		close(pipe_str[1]);
+		close(pipe_len[1]);
 		return (0);
 	}
 	else
@@ -95,8 +120,8 @@ int	main(void)
 		read(pipe_len[0], &len, sizeof(int));
 		close(pipe_str[0]);
 		close(pipe_len[0]);
-		printf("%s", buffer);
-		printf("%i", len);
+		printf("%s | ", buffer);
+		printf("%i\n", len);
 	}
 	return (0);
 }

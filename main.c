@@ -6,7 +6,7 @@
 /*   By: svogrig <svogrig@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/16 23:31:26 by svogrig           #+#    #+#             */
-/*   Updated: 2023/11/28 01:28:16 by svogrig          ###   ########.fr       */
+/*   Updated: 2023/12/13 05:31:02 by svogrig          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,18 @@ int	main(void)
 	else
 		return (-5);
 	
+
+
+
+
+
+
+
+
+
+
+
+
 	char *expected_str = file_load(FILE_EXPECTED_STR);
 	char *expected_return = file_load(FILE_EXPECTED_RETURN);
 	
